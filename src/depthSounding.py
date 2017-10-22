@@ -18,7 +18,9 @@ import requests
 import BeautifulSoup
 import json
 import matplotlib.pyplot as plt; 
-import matplotlib.mlab as mlab
+import matplotlib.mlab as mlab;
+from sklearn.mixture import GaussianMixture
+from sklearn.mixture import BayesianGaussianMixture
 
 __author__ = "Luke Burks"
 __license__ = "GPL"
@@ -139,8 +141,10 @@ def makeASounding(data):
 
 
 def plotData(data):
-	a = data.values(); 
+	b = data.values(); 
+	a = filter(lambda c: c!=-10,b); 
 
+	print("Length:{}".format(len(a))); 
 	print("Mean:{}".format(np.mean(a))); 
 	print("SD:{}".format(np.std(a))); 
 
@@ -148,7 +152,42 @@ def plotData(data):
 	plt.hist(a,num_bins,facecolor='blue',alpha=0.5,range=(0,max(a)),rwidth=.9); 
 	x = np.linspace(min(a),max(a),100); 
 	scale = len(a);
-	plt.plot(x,mlab.normpdf(x,np.mean(a),np.std(a))*scale); 
+	plt.plot(x,mlab.normpdf(x,np.mean(a),np.std(a))*scale,'--k',linewidth=2); 
+
+
+	
+	b = np.zeros(shape = (len(a),1)); 
+	for i in range(0,len(a)):
+		b[i][0] = a[i]; 
+		#b[i][1] = 1; 
+
+	gm = BayesianGaussianMixture(4,max_iter = 1000,n_init = 10); 
+	gm.fit(b);
+
+	# models = [None for i in range(1,4)]; 
+	# for i in range(1,4):
+	# 	models[i-1] = BayesianGaussianMixture(i);
+	# 	models[i-1].fit(b);  
+
+	# AIC = [m.aic(b) for m in models]; 
+	# BIC = [m.bic(b) for m in models]; 
+
+	# gm = models[np.argmin(AIC)]; 
+
+	means = gm.means_.T.tolist()[0]; 
+	covariances = gm.covariances_.T.tolist()[0][0];
+	weights = gm.weights_.tolist();  
+
+	gmPlot = np.zeros(len(x)); 
+	for i in range(0,2):
+		gmPlot = gmPlot + mlab.normpdf(x,means[i],np.sqrt(covariances[i]))*weights[i]*scale; 
+	plt.plot(x,gmPlot,'-k',linewidth=2); 
+
+	plt.legend(['Normal Fit','GM Fit','Data'])
+	plt.xlabel("First-link distance"); 
+	plt.ylabel("Number of pages"); 
+	plt.title("First-link distance of Wikipedia pages from Philosophy"); 
+	plt.xlim(0,max(a)); 
 	plt.show();
 
 
