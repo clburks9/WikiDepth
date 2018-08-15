@@ -15,12 +15,13 @@ pages will inevitably lead to the page for philosophy
 from __future__ import division
 import numpy as np
 import requests
-import BeautifulSoup
+#import BeautifulSoup
 import json
 import matplotlib.pyplot as plt; 
 import matplotlib.mlab as mlab;
 from sklearn.mixture import GaussianMixture
 from sklearn.mixture import BayesianGaussianMixture
+from bs4 import BeautifulSoup
 
 __author__ = "Luke Burks"
 __license__ = "GPL"
@@ -232,4 +233,9 @@ if __name__ == '__main__':
 	#soundItOut(fileName,1000); 
 
 	data = loadOnly(fileName); 
-	plotData(data); 
+	#plotData(data); 
+
+	#b = data.values(); 
+	#a = filter(lambda c: c!=-10,b); 
+
+	print(sorted(data,key=data.get));
